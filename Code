@@ -1,0 +1,79 @@
+
+//first user need to nter the password ,if the password is crt it needs to open the door lock as servo motor,if wrong print it is wrong password
+//this door locked n unlocked ,crt password or wrong password need to show in lcd
+#include<Servo.h>
+#include<Keypad.h>
+#include<LiquidCrystal_I2C.h>
+
+Servo servomotor;
+const byte rows=4;
+const byte colmn=4;
+
+char keymap[rows][colmn]= 
+{
+{'1', '2', '3', 'A'}, 
+{'4', '5', '6', 'B'}, 
+{'7', '8', '9', 'C'},
+{'*', '0', '#', 'D'}
+};
+
+byte rowPins[rows] = {8,7,6,5}; //Rows 0 to 3
+byte colPins[colmn]= {9,4,3,2};//column 0 to 3
+
+Keypad myKeypad= Keypad(makeKeymap(keymap), rowPins, colPins, rows, colmn);
+
+ String password="1234";
+ String input="";
+
+LiquidCrystal_I2C lcd(0x26,16,2);
+
+void setup()
+{
+  Serial.begin(9600);
+  lcd.init();
+  lcd.backlight();
+  
+  servomotor.attach(10);
+  servomotor.write(0);
+  Serial.println("enter a password");
+
+}
+void loop()
+{
+  char keypressed = myKeypad.getKey();
+  if (keypressed != NO_KEY)
+  {
+    Serial.print(keypressed);
+    if (keypressed=='*')
+    {
+      if(input==password)
+      {
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print("Correct password");
+        lcd.setCursor(0,1);
+        lcd.print("Door unlocked");
+        servomotor.write(90);delay(3000);
+        
+        servomotor.write(0);
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print("Door locked");
+      }
+      else
+      {
+        lcd.setCursor(0,0);
+        lcd.print("wrong password");
+        servomotor.write(0);
+      }
+      input="";
+    }
+    else
+    {
+      input=input+keypressed;
+    }
+  }
+  
+  
+  
+}
